@@ -6,7 +6,4 @@ Git clone and catkin_make to generate the RVIZ plugin. Then rosrun rviz rviz, in
 
 Contact Info:
 Qiaosong Wang
-
-University of Delaware
-
 qiaosong@udel.edu
