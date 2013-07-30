@@ -1,30 +1,7 @@
 /*
- * Copyright (c) 2011, Willow Garage, Inc.
- * All rights reserved.
+ * Qiaosong Wang
+ * University of Delaware
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *
- *     * Redistributions of source code must retain the above copyright
- *       notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above copyright
- *       notice, this list of conditions and the following disclaimer in the
- *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the Willow Garage, Inc. nor the names of its
- *       contributors may be used to endorse or promote products derived from
- *       this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
- * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
- * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include <OGRE/OgreSceneNode.h>
@@ -38,7 +15,7 @@
 #include <rviz/mesh_loader.h>
 #include <rviz/geometry.h>
 #include <rviz/properties/vector_property.h>
-
+#include "rviz/selection/selection_manager.h"
 #include "plant_flag_tool.h"
 
 namespace rviz_plugin_tutorials
@@ -57,7 +34,7 @@ UDCursorTool::UDCursorTool()
   : moving_flag_node_( NULL )
   , current_flag_property_( NULL )
 {
-  shortcut_key_ = 'v';
+  shortcut_key_ = 'u';
 }
 
 // The destructor destroys the Ogre scene nodes for the flags so they
@@ -85,6 +62,7 @@ UDCursorTool::~UDCursorTool()
 // set it invisible.
 void UDCursorTool::onInitialize()
 {
+/*
   flag_resource_ = "package://rviz_plugin_tutorials/media/flag.dae";
 
   if( rviz::loadMeshFromResource( flag_resource_ ).isNull() )
@@ -93,10 +71,13 @@ void UDCursorTool::onInitialize()
     return;
   }
 
+*/
   moving_flag_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
-  Ogre::Entity* entity = scene_manager_->createEntity( flag_resource_ );
-  moving_flag_node_->attachObject( entity );
+  //Ogre::Entity* entity = scene_manager_->createEntity( flag_resource_ );
+  //moving_flag_node_->attachObject( entity );
   moving_flag_node_->setVisible( false );
+
+
 }
 
 // Activation and deactivation
@@ -167,8 +148,53 @@ int UDCursorTool::processMouseEvent( rviz::ViewportMouseEvent& event )
   {
     return Render;
   }
-  Ogre::Vector3 intersection;
-  Ogre::Plane ground_plane( Ogre::Vector3::UNIT_Z, 0.0f );
+  //Ogre::Vector3 intersection;
+  //Ogre::Plane ground_plane( Ogre::Vector3::UNIT_Z, 0.0f );
+
+ Ogre::Vector3 pos;
+  bool success = context_->getSelectionManager()->get3DPoint( event.viewport, event.x, event.y, pos );
+  //setCursor( success ? hit_cursor_ : std_cursor_ );
+
+if ( success )
+  {
+   std::ostringstream s;
+    s << "<b>UD Cursor Connected Successfully:</b> ";
+    s.precision(5);
+    s << " [" << pos.x << "," << pos.y << "," << pos.z << "]";
+    s <<"Press m to exit, u to enter again";
+    setStatus( s.str().c_str() );
+
+    if( event.leftUp() )
+    {
+    s << "<b>  Detect Click At:</b> ";
+    s.precision(5);
+    s << " [" << pos.x << "," << pos.y << "," << pos.z << "]";
+     setStatus( s.str().c_str() );
+    }
+/*
+    if( event.leftUp() )
+    {
+      geometry_msgs::PointStamped ps;
+      ps.point.x = pos.x;
+      ps.point.y = pos.y;
+      ps.point.z = pos.z;
+      ps.header.frame_id = context_->getFixedFrame().toStdString();
+      ps.header.stamp = ros::Time::now();
+      pub_.publish( ps );
+
+      if ( auto_deactivate_property_->getBool() )
+      {
+        flags |= Finished;
+      }
+    }
+*/
+  }
+  
+
+
+
+/*
+
   if( rviz::getPointOnPlaneFromWindowXY( event.viewport,
                                          ground_plane,
                                          event.x, event.y, intersection ))
@@ -188,12 +214,16 @@ int UDCursorTool::processMouseEvent( rviz::ViewportMouseEvent& event )
   {
     moving_flag_node_->setVisible( false ); // If the mouse is not pointing at the ground plane, don't show the flag.
   }
+
+*/
+
   return Render;
 }
 
 // This is a helper function to create a new flag in the Ogre scene and save its scene node in a list.
 void UDCursorTool::makeFlag( const Ogre::Vector3& position )
 {
+
   Ogre::SceneNode* node = scene_manager_->getRootSceneNode()->createChildSceneNode();
   Ogre::Entity* entity = scene_manager_->createEntity( flag_resource_ );
   node->attachObject( entity );
@@ -220,6 +250,8 @@ void UDCursorTool::makeFlag( const Ogre::Vector3& position )
 // file is read back in.
 void UDCursorTool::save( rviz::Config config ) const
 {
+
+/*
   config.mapSetValue( "Class", getClassId() );
 
   // The top level of this tool's Config is a map, but our flags
@@ -243,6 +275,7 @@ void UDCursorTool::save( rviz::Config config ) const
     // ... and its position.
     position_prop->save( flag_config );
   }
+*/
 }
 
 // In a tool's load() function, we don't need to read its class
@@ -253,6 +286,7 @@ void UDCursorTool::load( const rviz::Config& config )
   // Here we get the "Flags" sub-config from the tool config and loop over its entries:
   rviz::Config flags_config = config.mapGetChild( "Flags" );
   int num_flags = flags_config.listLength();
+/*
   for( int i = 0; i < num_flags; i++ )
   {
     rviz::Config flag_config = flags_config.listChildAt( i );
@@ -277,6 +311,7 @@ void UDCursorTool::load( const rviz::Config& config )
     getPropertyContainer()->addChild( prop );
     makeFlag( prop->getVector() );
   }
+*/
 }
 
 // End of .cpp file
