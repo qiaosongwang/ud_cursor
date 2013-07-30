@@ -1,4 +1,4 @@
-<library path="lib/librviz_plugin_tutorials">
+<library path="lib/libud_cursor">
   <class name="rviz_plugin_tutorials/Teleop"
          type="rviz_plugin_tutorials::TeleopPanel"
          base_class_type="rviz::Panel">
@@ -13,8 +13,8 @@
       Displays direction and scale of accelerations from sensor_msgs/Imu messages.
     </description>
   </class>
-  <class name="rviz_plugin_tutorials/PlantFlag"
-         type="rviz_plugin_tutorials::PlantFlagTool"
+  <class name="rviz_plugin_tutorials/UDCursor"
+         type="rviz_plugin_tutorials::UDCursorTool"
          base_class_type="rviz::Tool">
     <description>
       Tool for planting flags on the ground plane in rviz.
