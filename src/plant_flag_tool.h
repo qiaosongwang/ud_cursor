@@ -6,7 +6,17 @@
 #ifndef PLANT_FLAG_TOOL_H
 #define PLANT_FLAG_TOOL_H
 
+#include <string>
 #include <rviz/tool.h>
+#include <rviz/properties/string_property.h>
+# include <ros/node_handle.h>
+# include <ros/publisher.h>
+
+# include "rviz/tool.h"
+
+# include <QCursor>
+# include <QObject>
+
 
 namespace Ogre
 {
@@ -19,6 +29,8 @@ namespace rviz
 class VectorProperty;
 class VisualizationManager;
 class ViewportMouseEvent;
+class StringProperty;
+class BoolProperty;
 }
 
 namespace rviz_plugin_tutorials
@@ -35,6 +47,7 @@ public:
   UDCursorTool();
   ~UDCursorTool();
 
+
   virtual void onInitialize();
 
   virtual void activate();
@@ -45,6 +58,10 @@ public:
   virtual void load( const rviz::Config& config );
   virtual void save( rviz::Config config ) const;
 
+public Q_SLOTS:
+  void updateTopic();
+
+
 private:
   void makeFlag( const Ogre::Vector3& position );
 
@@ -52,6 +69,10 @@ private:
   Ogre::SceneNode* moving_flag_node_;
   std::string flag_resource_;
   rviz::VectorProperty* current_flag_property_;
+  rviz::StringProperty* topic_property_;
+  ros::NodeHandle nh_;
+  ros::Publisher pub_;
+
 };
 // END_TUTORIAL
 
