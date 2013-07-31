@@ -7,6 +7,8 @@
 #include <OGRE/OgreSceneNode.h>
 #include <OGRE/OgreSceneManager.h>
 #include <OGRE/OgreEntity.h>
+#include <OGRE/OgreRay.h>
+#include <OGRE/OgreVector3.h>
 
 #include <ros/console.h>
 
@@ -15,8 +17,16 @@
 #include <rviz/mesh_loader.h>
 #include <rviz/geometry.h>
 #include <rviz/properties/vector_property.h>
-#include "rviz/selection/selection_manager.h"
+#include <rviz/selection/selection_manager.h>
+#include <rviz/properties/bool_property.h>
+#include <rviz/properties/string_property.h>
 #include "plant_flag_tool.h"
+#include <geometry_msgs/PointStamped.h>
+#include <sstream>
+
+
+float globalx,globaly,globalz;
+
 
 namespace rviz_plugin_tutorials
 {
@@ -30,11 +40,15 @@ namespace rviz_plugin_tutorials
 //
 // Here we set the "shortcut_key_" member variable defined in the
 // superclass to declare which key will activate the tool.
+
+
 UDCursorTool::UDCursorTool()
   : moving_flag_node_( NULL )
   , current_flag_property_( NULL )
 {
   shortcut_key_ = 'u';
+
+  
 }
 
 // The destructor destroys the Ogre scene nodes for the flags so they
@@ -43,10 +57,12 @@ UDCursorTool::UDCursorTool()
 // button.
 UDCursorTool::~UDCursorTool()
 {
+/*
   for( unsigned i = 0; i < flag_nodes_.size(); i++ )
   {
     scene_manager_->destroySceneNode( flag_nodes_[ i ]);
   }
+*/
 }
 
 // onInitialize() is called by the superclass after scene_manager_ and
@@ -72,6 +88,14 @@ void UDCursorTool::onInitialize()
   }
 
 */
+
+topic_property_ = new rviz::StringProperty( "Topic", "/ud_clicked_point",
+                                        "The topic on which to publish points.",
+                                        getPropertyContainer(), SLOT( updateTopic() ), this );
+
+
+updateTopic();
+
   moving_flag_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
   //Ogre::Entity* entity = scene_manager_->createEntity( flag_resource_ );
   //moving_flag_node_->attachObject( entity );
@@ -103,9 +127,11 @@ void UDCursorTool::activate()
   {
     moving_flag_node_->setVisible( true );
 
-    current_flag_property_ = new rviz::VectorProperty( "Flag " + QString::number( flag_nodes_.size() ));
-    current_flag_property_->setReadOnly( true );
-    getPropertyContainer()->addChild( current_flag_property_ );
+   // current_flag_property_ = new rviz::VectorProperty( "Flag " + QString::number( flag_nodes_.size() ));
+   // current_flag_property_->setReadOnly( true );
+    //getPropertyContainer()->addChild( current_flag_property_ );
+
+   
   }
 }
 
@@ -125,6 +151,11 @@ void UDCursorTool::deactivate()
     delete current_flag_property_;
     current_flag_property_ = NULL;
   }
+}
+
+void UDCursorTool::updateTopic()
+{
+  pub_ = nh_.advertise<geometry_msgs::PointStamped>( topic_property_->getStdString(), 1 );
 }
 
 // Handling mouse events
@@ -158,11 +189,17 @@ int UDCursorTool::processMouseEvent( rviz::ViewportMouseEvent& event )
 if ( success )
   {
    std::ostringstream s;
-    s << "<b>UD Cursor Connected Successfully:</b> ";
-    s.precision(5);
+    s << "<b>UD Cursor:</b> ";
+   // s.precision(5);
     s << " [" << pos.x << "," << pos.y << "," << pos.z << "]";
-    s <<"Press m to exit, u to enter again";
+
     setStatus( s.str().c_str() );
+
+    if(( pos.x!= globalx)&&( pos.y!= globaly)&&( pos.z!= globalz))
+       {
+        s <<"<b>READY FOR A CLICK!<b>";
+        setStatus( s.str().c_str() );
+       }
 
     if( event.leftUp() )
     {
@@ -170,6 +207,19 @@ if ( success )
     s.precision(5);
     s << " [" << pos.x << "," << pos.y << "," << pos.z << "]";
      setStatus( s.str().c_str() );
+     geometry_msgs::PointStamped ps;
+      ps.point.x = pos.x;
+      ps.point.y = pos.y;
+      ps.point.z = pos.z;
+      ps.header.frame_id = context_->getFixedFrame().toStdString();
+      ps.header.stamp = ros::Time::now();
+      pub_.publish( ps );
+
+      globalx=ps.point.x;
+      globaly=ps.point.y;
+      globalz=ps.point.z;
+      
+     updateTopic();
     }
 /*
     if( event.leftUp() )
