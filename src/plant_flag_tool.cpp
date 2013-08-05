@@ -20,6 +20,8 @@
 #include <rviz/selection/selection_manager.h>
 #include <rviz/properties/bool_property.h>
 #include <rviz/properties/string_property.h>
+#include <rviz/default_plugin/tools/focus_tool.h>
+
 #include "plant_flag_tool.h"
 #include <geometry_msgs/PointStamped.h>
 #include <sstream>
@@ -48,7 +50,7 @@ UDCursorTool::UDCursorTool()
 {
   shortcut_key_ = 'u';
 
-  
+  status_string = (char *) malloc(256 * sizeof(char));
 }
 
 // The destructor destroys the Ogre scene nodes for the flags so they
@@ -78,6 +80,9 @@ UDCursorTool::~UDCursorTool()
 // set it invisible.
 void UDCursorTool::onInitialize()
 {
+  std_cursor_ = rviz::getDefaultCursor();
+  hit_cursor_ = rviz::makeIconCursor( "package://rviz/icons/crosshair.svg" );
+
 /*
   flag_resource_ = "package://rviz_plugin_tutorials/media/flag.dae";
 
@@ -184,46 +189,39 @@ int UDCursorTool::processMouseEvent( rviz::ViewportMouseEvent& event )
 
  Ogre::Vector3 pos;
   bool success = context_->getSelectionManager()->get3DPoint( event.viewport, event.x, event.y, pos );
-  //setCursor( success ? hit_cursor_ : std_cursor_ );
+  setCursor( success ? hit_cursor_ : std_cursor_ );
 
-if ( success )
-  {
-   std::ostringstream s;
+  if ( success ) {
+    
+    sprintf(status_string, "<b>UD Cursor:</b> [%.3lf, %.3lf, %.3lf]", pos.x, pos.y, pos.z);
+    setStatus(status_string);
+
+    /*
+    std::ostringstream s;
     s << "<b>UD Cursor:</b> ";
-   // s.precision(5);
-    s << " [" << pos.x << "," << pos.y << "," << pos.z << "]";
-
+    s.precision(3);
+    s << " [" << pos.x << ", " << pos.y << ", " << pos.z << "]";
+    
     setStatus( s.str().c_str() );
+    */
 
-    if(( pos.x!= globalx)&&( pos.y!= globaly)&&( pos.z!= globalz))
-       {
-        s <<"<b>READY FOR A CLICK!<b>";
-        setStatus( s.str().c_str() );
-       }
-
-    if( event.leftUp() )
-    {
-    s << "<b>  Detect Click At:</b> ";
-    s.precision(5);
-    s << " [" << pos.x << "," << pos.y << "," << pos.z << "]";
-     setStatus( s.str().c_str() );
-     geometry_msgs::PointStamped ps;
-      ps.point.x = pos.x;
-      ps.point.y = pos.y;
-      ps.point.z = pos.z;
-      ps.header.frame_id = context_->getFixedFrame().toStdString();
-      ps.header.stamp = ros::Time::now();
-      pub_.publish( ps );
-
-      globalx=ps.point.x;
-      globaly=ps.point.y;
-      globalz=ps.point.z;
-      
-     updateTopic();
+    /*
+    if (( pos.x!= globalx)&&( pos.y!= globaly)&&( pos.z!= globalz)) {
+      s <<"<b>READY FOR A CLICK!<b>";
+      setStatus( s.str().c_str() );
     }
-/*
-    if( event.leftUp() )
-    {
+    */
+
+    if ( event.leftUp() ) {
+
+      //      s << "<b>  Detect Click At:</b> ";
+      //      s.precision(5);
+      //      s << " [" << pos.x << "," << pos.y << "," << pos.z << "]";
+      //      setStatus( s.str().c_str() );
+
+      sprintf(status_string, "<b>UD Cursor: Sending</b> [%.3lf, %.3lf, %.3lf]", pos.x, pos.y, pos.z);
+      setStatus(status_string);
+
       geometry_msgs::PointStamped ps;
       ps.point.x = pos.x;
       ps.point.y = pos.y;
@@ -231,18 +229,36 @@ if ( success )
       ps.header.frame_id = context_->getFixedFrame().toStdString();
       ps.header.stamp = ros::Time::now();
       pub_.publish( ps );
+      
+      globalx=ps.point.x;
+      globaly=ps.point.y;
+      globalz=ps.point.z;
+      
+      updateTopic();
+    }
 
+    /*
+      if( event.leftUp() )
+      {
+      geometry_msgs::PointStamped ps;
+      ps.point.x = pos.x;
+      ps.point.y = pos.y;
+      ps.point.z = pos.z;
+      ps.header.frame_id = context_->getFixedFrame().toStdString();
+      ps.header.stamp = ros::Time::now();
+      pub_.publish( ps );
+      
       if ( auto_deactivate_property_->getBool() )
       {
-        flags |= Finished;
+      flags |= Finished;
       }
-    }
-*/
+      }
+    */
+  }  // success
+  else {
+    setStatus("");
   }
   
-
-
-
 /*
 
   if( rviz::getPointOnPlaneFromWindowXY( event.viewport,

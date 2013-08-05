@@ -17,6 +17,8 @@
 # include <QCursor>
 # include <QObject>
 
+#include "rviz/tool_manager.h"
+
 
 namespace Ogre
 {
@@ -62,7 +64,7 @@ public Q_SLOTS:
   void updateTopic();
 
 
-private:
+ private:
   void makeFlag( const Ogre::Vector3& position );
 
   std::vector<Ogre::SceneNode*> flag_nodes_;
@@ -72,6 +74,11 @@ private:
   rviz::StringProperty* topic_property_;
   ros::NodeHandle nh_;
   ros::Publisher pub_;
+
+ protected:
+  QCursor std_cursor_;
+  QCursor hit_cursor_;
+  char *status_string;
 
 };
 // END_TUTORIAL
