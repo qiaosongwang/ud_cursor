@@ -26,9 +26,7 @@
 #include <geometry_msgs/PointStamped.h>
 #include <sstream>
 
-
 float globalx,globaly,globalz;
-
 
 namespace rviz_plugin_tutorials
 {
@@ -51,6 +49,7 @@ UDCursorTool::UDCursorTool()
   shortcut_key_ = 'u';
 
   status_string = (char *) malloc(256 * sizeof(char));
+
 }
 
 // The destructor destroys the Ogre scene nodes for the flags so they
