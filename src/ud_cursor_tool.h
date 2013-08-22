@@ -9,13 +9,14 @@
 #include <string>
 #include <rviz/tool.h>
 #include <rviz/properties/string_property.h>
-# include <ros/node_handle.h>
-# include <ros/publisher.h>
+#include <ros/node_handle.h>
+#include <ros/publisher.h>
 
-# include "rviz/tool.h"
+#include "rviz/tool.h"
 
-# include <QCursor>
-# include <QObject>
+#include <QCursor>
+#include <QObject>
+#include <QMenu>
 
 #include "rviz/tool_manager.h"
 
@@ -62,7 +63,10 @@ public:
 
 public Q_SLOTS:
   void updateTopic();
-
+  
+  void menu_move_selected(); 
+  void menu_delete_selected(); 
+  void menu_delete_all();
 
  private:
   void makeFlag( const Ogre::Vector3& position );
@@ -75,10 +79,14 @@ public Q_SLOTS:
   ros::NodeHandle nh_;
   ros::Publisher pub_;
 
+  bool context_menu_visible;
+
  protected:
   QCursor std_cursor_;
   QCursor hit_cursor_;
   char *status_string;
+
+  boost::shared_ptr<QMenu> tool_menu;
 
 };
 // END_TUTORIAL

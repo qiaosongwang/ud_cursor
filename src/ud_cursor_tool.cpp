@@ -21,8 +21,9 @@
 #include <rviz/properties/bool_property.h>
 #include <rviz/properties/string_property.h>
 #include <rviz/default_plugin/tools/focus_tool.h>
+#include <rviz/render_panel.h>
 
-#include "plant_flag_tool.h"
+#include "ud_cursor_tool.h"
 #include <geometry_msgs/PointStamped.h>
 #include <sstream>
 
@@ -41,6 +42,23 @@ namespace rviz_plugin_tutorials
 // Here we set the "shortcut_key_" member variable defined in the
 // superclass to declare which key will activate the tool.
 
+void UDCursorTool::menu_move_selected() 
+{
+  printf("move\n");
+  context_menu_visible = false;
+}
+
+void UDCursorTool::menu_delete_selected() 
+{
+  printf("delete selected\n");
+  context_menu_visible = false;
+}
+
+void UDCursorTool::menu_delete_all() 
+{
+  printf("delete all\n");
+  context_menu_visible = false;
+}
 
 UDCursorTool::UDCursorTool()
   : moving_flag_node_( NULL )
@@ -49,6 +67,25 @@ UDCursorTool::UDCursorTool()
   shortcut_key_ = 'u';
 
   status_string = (char *) malloc(256 * sizeof(char));
+
+  context_menu_visible = false;
+
+  QAction *separator = new QAction(this);
+  separator->setSeparator(true);
+
+  QAction *action_move_selected = new QAction(tr("&Move selected point"), this);
+  QAction *action_delete_selected = new QAction(tr("&Delete selected point"), this);
+  QAction *action_delete_all = new QAction(tr("Delete &all points"), this);
+
+  tool_menu.reset(new QMenu);
+  tool_menu->addAction(action_move_selected);
+  tool_menu->addAction(separator);
+  tool_menu->addAction(action_delete_selected);
+  tool_menu->addAction(action_delete_all);
+
+  connect(action_move_selected, SIGNAL(triggered()), this, SLOT(menu_move_selected()));
+  connect(action_delete_selected, SIGNAL(triggered()), this, SLOT(menu_delete_selected()));
+  connect(action_delete_all, SIGNAL(triggered()), this, SLOT(menu_delete_all()));
 
 }
 
@@ -177,12 +214,35 @@ void UDCursorTool::updateTopic()
 // place and drop the pointer to the VectorProperty.  Dropping the
 // pointer means when the tool is deactivated the VectorProperty won't
 // be deleted, which is what we want.
+
 int UDCursorTool::processMouseEvent( rviz::ViewportMouseEvent& event )
 {
   if( !moving_flag_node_ )
   {
     return Render;
   }
+
+  if ( event.rightDown() && !context_menu_visible) {
+    
+    printf("pop up context menu\n"); fflush(stdout);
+
+    event.panel->showContextMenu(tool_menu);
+
+    context_menu_visible = true;
+
+    return Render;
+
+  }
+  else if ( event.rightUp() ) {
+
+    printf("process menu selection\n"); fflush(stdout);
+
+    context_menu_visible = false;
+
+    return Render;
+
+  }
+
   //Ogre::Vector3 intersection;
   //Ogre::Plane ground_plane( Ogre::Vector3::UNIT_Z, 0.0f );
 
@@ -192,7 +252,7 @@ int UDCursorTool::processMouseEvent( rviz::ViewportMouseEvent& event )
 
   if ( success ) {
     
-    sprintf(status_string, "<b>UD Cursor:</b> [%.3lf, %.3lf, %.3lf]", pos.x, pos.y, pos.z);
+    sprintf(status_string, "<b>UD Cursor</b> [%.3lf, %.3lf, %.3lf]", pos.x, pos.y, pos.z);
     setStatus(status_string);
 
     /*
@@ -218,7 +278,7 @@ int UDCursorTool::processMouseEvent( rviz::ViewportMouseEvent& event )
       //      s << " [" << pos.x << "," << pos.y << "," << pos.z << "]";
       //      setStatus( s.str().c_str() );
 
-      sprintf(status_string, "<b>UD Cursor: Sending</b> [%.3lf, %.3lf, %.3lf]", pos.x, pos.y, pos.z);
+      sprintf(status_string, "<b>UD Cursor</b> Sending [%.3lf, %.3lf, %.3lf]", pos.x, pos.y, pos.z);
       setStatus(status_string);
 
       geometry_msgs::PointStamped ps;
@@ -255,7 +315,10 @@ int UDCursorTool::processMouseEvent( rviz::ViewportMouseEvent& event )
     */
   }  // success
   else {
-    setStatus("");
+    sprintf(status_string, "<b>UD Cursor</b>");
+
+    setStatus(status_string);
+    //    setStatus("");
   }
   
 /*

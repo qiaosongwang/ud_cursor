@@ -24,14 +24,14 @@ catkin_package(
 ## Here we specify which header files need to be run through "moc",
 ## Qt's meta-object compiler.
 qt4_wrap_cpp(MOC_FILES
-  src/plant_flag_tool.h
+  src/ud_cursor_tool.h
 )
 
 
 ## Here we specify the list of source files, including the output of
 ## the previous command which is stored in ``${MOC_FILES}``.
 set(SOURCE_FILES
- src/plant_flag_tool.cpp
+ src/ud_cursor_tool.cpp
   ${MOC_FILES}
 )
 
