@@ -4,7 +4,18 @@ project(ud_cursor)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package( catkin REQUIRED COMPONENTS roscpp rospy ) 
+find_package( catkin REQUIRED COMPONENTS roscpp rospy geometry_msgs std_msgs message_generation ) 
+
+add_message_files(
+  FILES
+  UDCursor.msg
+)
+
+generate_messages(
+  DEPENDENCIES
+  std_msgs
+  geometry_msgs
+)
 
 ## This plugin includes Qt widgets, so we must include Qt like so:
 find_package(Qt4 COMPONENTS QtCore QtGui REQUIRED)

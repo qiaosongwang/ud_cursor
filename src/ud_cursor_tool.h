@@ -3,8 +3,8 @@
  * University of Delaware
  *
  */
-#ifndef PLANT_FLAG_TOOL_H
-#define PLANT_FLAG_TOOL_H
+#ifndef UD_CURSOR_TOOL_H
+#define UD_CURSOR_TOOL_H
 
 #include <string>
 #include <rviz/tool.h>
@@ -18,8 +18,22 @@
 #include <QObject>
 #include <QMenu>
 
+#include <OGRE/OgreSceneNode.h>
+#include <OGRE/OgreSceneManager.h>
+#include <OGRE/OgreEntity.h>
+#include <OGRE/OgreRay.h>
+#include <OGRE/OgreVector3.h>
+
 #include "rviz/tool_manager.h"
 
+
+#include "ud_cursor/UDCursor.h"
+
+
+#define UD_CURSOR_EDIT_MODE_ADD         0
+#define UD_CURSOR_EDIT_MODE_MOVE        1
+#define UD_CURSOR_EDIT_MODE_DELETE      2
+#define UD_CURSOR_EDIT_MODE_DELETE_ALL  3
 
 namespace Ogre
 {
@@ -61,12 +75,20 @@ public:
   virtual void load( const rviz::Config& config );
   virtual void save( rviz::Config config ) const;
 
+  Ogre::Plane selection_plane;
+
 public Q_SLOTS:
   void updateTopic();
   
-  void menu_move_selected(); 
-  void menu_delete_selected(); 
-  void menu_delete_all();
+  void menu_edit_add();
+  void menu_edit_move_selected(); 
+  void menu_edit_delete_selected(); 
+  void menu_edit_delete_all();
+
+  void menu_display_indices();
+  void menu_display_connections();
+
+  void menu_plane_selection();
 
  private:
   void makeFlag( const Ogre::Vector3& position );
@@ -77,13 +99,28 @@ public Q_SLOTS:
   rviz::VectorProperty* current_flag_property_;
   rviz::StringProperty* topic_property_;
   ros::NodeHandle nh_;
-  ros::Publisher pub_;
+  //  ros::Publisher pub_;
+  ros::Publisher cursor_pub;
+  ros::Subscriber selection_plane_sub;
 
-  bool context_menu_visible;
+  bool use_selection_plane;
+
+  QAction *action_add;
+  QAction *action_move_selected;
+  QAction *action_delete_selected;
+  QAction *action_delete_all;
+  QAction *action_display_indices;
+  QAction *action_display_connections;
+  QAction *action_plane_selection;
+
+  ud_cursor::UDCursor cursor_msg;
 
  protected:
   QCursor std_cursor_;
   QCursor hit_cursor_;
+  QCursor plane_hit_cursor_;
+  QCursor move_cursor_;
+  QCursor delete_cursor_;
   char *status_string;
 
   boost::shared_ptr<QMenu> tool_menu;
@@ -93,4 +130,4 @@ public Q_SLOTS:
 
 } // end namespace rviz_plugin_tutorials
 
-#endif // PLANT_FLAG_TOOL_H
+#endif // UD_CURSOR_TOOL_H
