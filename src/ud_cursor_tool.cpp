@@ -29,6 +29,9 @@
 #include <geometry_msgs/PointStamped.h>
 #include <shape_msgs/Plane.h>
 
+#include "ud_imarker/UDMeasurement.h"
+//#include "include/ud_imarker.hh"
+
 #include <sstream>
 
 float globalx,globaly,globalz;
@@ -197,14 +200,25 @@ void UDCursorTool::menu_plane_selection()
 //----------------------------------------------------------------------------
 //----------------------------------------------------------------------------
 
-void selectionPlaneCallback(const shape_msgs::Plane & plane_msg)
+//void selectionPlaneCallback(const shape_msgs::Plane & plane_msg)
+void selectionPlaneCallback(const ud_imarker::UDMeasurement & measurement_msg)
 {
-  printf("da plane!  da plane!\n"); fflush(stdout);
+  if (measurement_msg.Category == MEASUREMENT_TYPE_PLANE) {
 
+    printf("da plane!  da plane!\n"); fflush(stdout);
+
+    ud_cursor_tool->selection_plane = Ogre::Plane(measurement_msg.Value[0],
+						  measurement_msg.Value[1],
+						  measurement_msg.Value[2],
+						  measurement_msg.Value[3]);
+
+    /*
   ud_cursor_tool->selection_plane = Ogre::Plane(plane_msg.coef[0],
 						plane_msg.coef[1],
 						plane_msg.coef[2],
 						plane_msg.coef[3]);
+    */
+  }
 }
 
 //----------------------------------------------------------------------------
@@ -254,7 +268,7 @@ updateTopic();
   //moving_flag_node_->attachObject( entity );
   moving_flag_node_->setVisible( false );
 
-  selection_plane_sub = nh_.subscribe("reference_plane", 10, selectionPlaneCallback);
+  selection_plane_sub = nh_.subscribe("ud_measurement", 10, selectionPlaneCallback);
 }
 
 //----------------------------------------------------------------------------

@@ -24,7 +24,7 @@ include(${QT_USE_FILE})
 catkin_package(
     ##INCLUDE_DIRS include
     LIBRARIES ${PROJECT_NAME}
-    CATKIN_DEPENDS roscpp rospy message_runtime
+    CATKIN_DEPENDS roscpp rospy message_runtime ud_imarker
     DEPENDS ach QtCore QtGui )
 
 ## I prefer the Qt signals and slots to avoid defining "emit", "slots",
@@ -46,7 +46,7 @@ set(SOURCE_FILES
   ${MOC_FILES}
 )
 
-include_directories( include )
+include_directories( include ud_imarker/include)
 
 ## Set the default path for built libraries to the "lib" directory
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)

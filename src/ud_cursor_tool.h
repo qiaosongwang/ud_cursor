@@ -35,6 +35,21 @@
 #define UD_CURSOR_EDIT_MODE_DELETE      2
 #define UD_CURSOR_EDIT_MODE_DELETE_ALL  3
 
+// as with ud_imarker trying to see the defines above,
+// i cannot figure out how to include ud_imarker.hh from here...
+// aaaaarrggghhhhhh catkin blows
+
+#ifndef MEASUREMENT_TYPE_DISTANCE
+
+#define MEASUREMENT_TYPE_DISTANCE    0
+#define MEASUREMENT_TYPE_PLANE       1
+#define MEASUREMENT_TYPE_LINE        2
+#define MEASUREMENT_TYPE_CIRCLE      3
+#define MEASUREMENT_TYPE_TRANSFORM   4
+#define MEASUREMENT_TYPE_ERROR       5
+
+#endif
+
 namespace Ogre
 {
 class SceneNode;
